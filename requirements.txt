@@ -1,0 +1,4 @@
+# Python 3.11 or newer (tested with Python 3.13). Pinned for reproducibility.
+numpy==2.5.3
+pandas==3.0.5
+# Later steps will add: python-dotenv, the judges' API clients, scipy, scikit-learn, torch, transformers.
