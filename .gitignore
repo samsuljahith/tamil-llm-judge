@@ -1,0 +1,24 @@
+# Secrets: API keys live only in .env
+.env
+
+# Raw downloads (re-create with scripts/01_download_data.py)
+data/raw/
+
+# Large generated files (kept on OneDrive, not GitHub)
+data/embeddings/
+models/
+*.npy
+*.pt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

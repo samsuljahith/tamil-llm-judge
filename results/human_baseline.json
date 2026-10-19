@@ -1,0 +1,92 @@
+{
+  "source_commits": {
+    "karya": "9557f949cc487e88dc6add4d8e49f648c9639bbe",
+    "microsoft": "03bac88c3d899b008efd9671b11109b11676b7c4"
+  },
+  "tamil": {
+    "pairs": 2002,
+    "unique_pairs": 1820,
+    "repeat_pairs": 182,
+    "prompts": 20,
+    "models": 14,
+    "annotators": 18,
+    "pairs_cross_checked_with_per_annotator_file": 2002,
+    "majority_counts": {
+      "A": 663,
+      "B": 708,
+      "tie": 631
+    },
+    "majority_pct": {
+      "A": 33.1,
+      "B": 35.4,
+      "tie": 31.5
+    },
+    "all_three_agree_pct": 45.4,
+    "all_three_disagree_pct": 7.1,
+    "fleiss_kappa_all_pairs": 0.415,
+    "fleiss_kappa_unique_pairs": 0.413,
+    "repeat_consistency_pct": 83.0,
+    "gpt4_32k_verdict_counts": {
+      "A": 1041,
+      "B": 902,
+      "tie": 59
+    }
+  },
+  "hindi": {
+    "pairs": 4180,
+    "unique_pairs": 3800,
+    "repeat_pairs": 380,
+    "prompts": 20,
+    "models": 20,
+    "annotators": 13,
+    "pairs_cross_checked_with_per_annotator_file": 4100,
+    "majority_counts": {
+      "A": 1941,
+      "B": 1970,
+      "tie": 269
+    },
+    "majority_pct": {
+      "A": 46.4,
+      "B": 47.1,
+      "tie": 6.4
+    },
+    "all_three_agree_pct": 55.3,
+    "all_three_disagree_pct": 2.6,
+    "fleiss_kappa_all_pairs": 0.448,
+    "fleiss_kappa_unique_pairs": 0.443,
+    "repeat_consistency_pct": 85.5,
+    "gpt4_32k_verdict_counts": {
+      "A": 2177,
+      "B": 1890,
+      "tie": 113
+    }
+  },
+  "hindi_sample": {
+    "pairs": 1000,
+    "per_prompt": 50,
+    "seed": 42,
+    "majority_counts": {
+      "A": 450,
+      "B": 487,
+      "tie": 63
+    }
+  },
+  "tamil_direct": {
+    "responses": 280,
+    "model_checked_by_justification": 236,
+    "model_from_position_only": 44,
+    "fleiss_kappa": {
+      "LA": 0.405,
+      "TQ": 0.505,
+      "H": 0.319
+    },
+    "human_score_counts": {
+      "0": 80,
+      "1": 28,
+      "2": 43,
+      "3": 29,
+      "4": 26,
+      "5": 74
+    }
+  }
+}

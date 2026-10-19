@@ -1,0 +1,35 @@
+{
+  "karya": {
+    "description": "PARIKSHA human ratings released by Karya: pairwise (A/B/tie) and direct (0-5) scores",
+    "url": "https://github.com/karya-inc/pariksha.git",
+    "commit": "9557f949cc487e88dc6add4d8e49f648c9639bbe",
+    "licence": "DAIA Tech BY-NC-SA-FS 1.0 (non-commercial, attribution, share-alike; code that feeds the data into AI systems must be GPL-3.0)",
+    "files": {
+      "pariksha-pair.csv": "fa77b16d7e0eba3b5a11bb09ac250cef74fd5d0be603c167835ec2cf7b083175",
+      "pariksha-individual.csv": "d1f7fd1f6ac16766c79585bf2cc46bb9f11d0757d9f34f2bd6817922af0e05ba",
+      "LICENSE": "0b5320b49e20b8e0792d319e27aa38a0f305450132a92848814b2bde226718a4"
+    }
+  },
+  "microsoft": {
+    "description": "PARIKSHA prompts, model responses, pairings, per-annotator ratings and GPT-4-32K verdicts (Microsoft Research India)",
+    "url": "https://github.com/microsoft/PARIKSHA.git",
+    "commit": "03bac88c3d899b008efd9671b11109b11676b7c4",
+    "licence": "MIT",
+    "files": {
+      "LICENSE": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383",
+      "prompts/prompts_round1.json": "cbbfbbf679c8e2e1601a23763fbab5e3353a75a51eb82b77c444a16d7d0618bc",
+      "pairings/round1/llm_eval/tamil_pairings.json": "29bb9859a63e73105b8619a796ad4e90964bc90e1b2c6116918933498c7948fa",
+      "pairings/round1/llm_eval/hindi_pairings.json": "93f88217f4109725980e9665a4368680bc8444c590995a1954e39a1f378f36c2",
+      "outputs/round1/formatted/output_tamil.json": "163bf6beca267c1ac49d6eec93521e3a8bd323a66f515f865b7b1449e9b8fff4",
+      "outputs/round1/formatted/output_hindi.json": "6b6dd805b48a376880403453c0e7638bee3b9aa4d0f641ae5e464b25e97a196a",
+      "gpt_eval/outputs/round1/pairwise/battle_outcomes_tamil.json": "6f181a74c32743968d110a39dbee539f3e6244675d07a3ab2d5470fb3b024c90",
+      "gpt_eval/outputs/round1/pairwise/battle_outcomes_hindi.json": "6edc791c86cb5ad42314eccaebe923417cc27d342b6f6521d278d0623df15201",
+      "gpt_eval/outputs/round1/individual/task_quality/individual_tamil.json": "9c67f7d61462d91bc549742ae0a3c401e10a5840dadef6365821efec4eff915b",
+      "gpt_eval/outputs/round1/individual/linguistic_acceptability/individual_tamil.json": "4ba05db825ca0661bd2afd69ccf84555d7d1c42382e1427885ffbd2b3a3503f9",
+      "gpt_eval/outputs/round1/individual/hallucinations/individual_tamil.json": "4ad039d0bb9907ee14ca54d4fe20b36f9e5074726e22e415513835fe3652a3de",
+      "karya_eval/round1/individual/tamil_ratings_output_indi_just.tsv": "e1b7c454af5dc50808b65b0a89d68b88f84d547bf74260ceb3a0e13b91433f84",
+      "karya_eval/round1/pairwise/tamil_pairwise_ratings.tsv": "a1c32b272fb2fb1920d00bdd043b03cb99b54cb934899b06b8c498ff1f77c6d9",
+      "karya_eval/round1/pairwise/hindi_pairwise_ratings.tsv": "17acf5667ddcd4aeb6fdef5bb5ab4fe0a42a6374f7420c84ec6ab80f9dfa87e2"
+    }
+  }
+}
