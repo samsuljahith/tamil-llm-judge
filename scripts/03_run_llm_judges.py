@@ -22,6 +22,12 @@ Usage:
   python scripts/03_run_llm_judges.py --task tamil_pairwise --pilot 50
   python scripts/03_run_llm_judges.py --task hindi_pairwise
   python scripts/03_run_llm_judges.py --task tamil_direct
+  python scripts/03_run_llm_judges.py --task all --judge frontier
+  python scripts/03_run_llm_judges.py --task all --dry-run --pilot 2
+
+Four processes (one --judge each) can run at the same time: each process writes only
+results/judgements/<task>__<that_judge>.jsonl, and the budget guard re-reads every
+judge's logs before a paid call so the four together cannot overspend MAX_BUDGET_USD.
 
 No API key is ever printed, logged or committed. Keys live only in .env (git-ignored) and are read
 by the variable name given in config/judges.json. No annotator IDs or justification texts are read
@@ -50,11 +56,14 @@ LOG_DIR = ROOT / "results" / "judgements"
 # A verdict given when A and B are swapped maps back to the original orientation like this.
 SWAP = {"A": "B", "B": "A", "tie": "tie"}
 # The tasks the script can run, and the processed table each one reads.
+# --task all walks TASK_ORDER so a one-judge process can cover the whole experiment.
 TASKS = {
     "tamil_pairwise": ("pairs_tamil.csv", "tamil"),
     "hindi_pairwise": ("pairs_hindi_sample.csv", "hindi"),
     "tamil_direct": ("direct_tamil.csv", "tamil"),
 }
+TASK_ORDER = ("tamil_pairwise", "tamil_direct", "hindi_pairwise")
+JUDGE_NAMES = ("frontier", "low_cost", "sea_lion", "base_model")
 # The full experiment judges every pair in both orders plus every direct response, per judge:
 #   tamil_pairwise 2,002 x 2 + hindi_pairwise 1,000 x 2 + tamil_direct 280 = 6,284 calls per judge.
 FULL_CALLS_PER_JUDGE = 2002 * 2 + 1000 * 2 + 280
@@ -335,6 +344,31 @@ def prior_cost_and_count(task: str, judge: str) -> tuple[float, int]:
     return total, n
 
 
+def spend_across_all_logs(judge_names: tuple[str, ...] = JUDGE_NAMES) -> dict[str, tuple[float, int]]:
+    """Read every task's JSONL for every judge and return {judge: (cost_usd, n_ok)}.
+
+    Used by the budget guard so four parallel --judge processes share one picture of spend.
+    Consistency logs are excluded: they are a one-off check, not part of the full-run budget.
+    """
+    spend: dict[str, tuple[float, int]] = {}
+    for name in judge_names:
+        cost, n = 0.0, 0
+        for task in TASKS:
+            c, k = prior_cost_and_count(task, name)
+            cost += c
+            n += k
+        spend[name] = (cost, n)
+    return spend
+
+
+def project_from_logs() -> float:
+    """Project the full-run cost from every judge's logged mean, including judges this process is not running."""
+    spend = spend_across_all_logs()
+    return project_full_cost({n: c for n, (c, _) in spend.items()},
+                             {n: k for n, (_, k) in spend.items()},
+                             {n: None for n in JUDGE_NAMES})
+
+
 def append_log(task: str, judge: str, record: dict) -> None:
     """Append one JSON line. Append-only writes are what make the run safely resumable."""
     with log_path(task, judge).open("a", encoding="utf-8") as handle:
@@ -344,9 +378,23 @@ def append_log(task: str, judge: str, record: dict) -> None:
 # ---------------------------------------------------------------------------------------------
 # Running one task
 # ---------------------------------------------------------------------------------------------
-def run(task: str, pilot: int | None, consistency: int | None = None) -> None:
+def selected_judges(config: dict, names: list[str] | None, consistency: int | None) -> dict:
+    """Pick which judges this process will run. Default is all four; --consistency is FRONTIER + LOW_COST."""
+    allowed = ("frontier", "low_cost") if consistency is not None else JUDGE_NAMES
+    chosen = names or list(allowed)
+    unknown = [n for n in chosen if n not in JUDGE_NAMES]
+    if unknown:
+        sys.exit(f"Unknown judge(s): {unknown}. Choose from {list(JUDGE_NAMES)}.")
+    judges = {n: config["judges"][n] for n in chosen if n in allowed}
+    if not judges:
+        sys.exit("No judges selected (a --judge value was outside the --consistency pair).")
+    return judges
+
+
+def run(task: str, pilot: int | None, consistency: int | None = None,
+        judge_names: list[str] | None = None, dry_run: bool = False) -> int:
+    """Run one task for the selected judges. Returns how many API calls would still be needed."""
     config = load_config()
-    keys = load_keys()
     seed = int(config.get("seed", 42))
     max_budget = float(config.get("max_budget_usd", 100))
     LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -359,35 +407,34 @@ def run(task: str, pilot: int | None, consistency: int | None = None) -> None:
     n_keep = consistency if consistency is not None else pilot
     if n_keep is not None:
         items = items[:n_keep]  # the first N items, deterministic because the tables are sorted
-    if consistency is not None:
-        orders = ("AB",)  # original presentation order only
-        judges = {k: v for k, v in config["judges"].items() if k in ("frontier", "low_cost")}
-    else:
-        orders = ("AB", "BA") if task.endswith("pairwise") else ("NA",)
-        judges = config["judges"]
+    orders = ("AB",) if consistency is not None else (
+        ("AB", "BA") if task.endswith("pairwise") else ("NA",))
+    judges = selected_judges(config, judge_names, consistency)
 
-    clients = {name: make_client(cfg, keys) for name, cfg in judges.items()}
+    # Dry-run never opens a client (and never needs a key), so it cannot make a paid call.
+    clients = {} if dry_run else {name: make_client(cfg, load_keys()) for name, cfg in judges.items()}
     limiters = {name: RateLimiter(cfg.get("rpm_limit")) for name, cfg in judges.items()}
-    # Seed the running cost/count from any previous run of this log stem, so the budget guard is accurate.
-    cost_sum = {name: prior_cost_and_count(log_task, name)[0] for name in judges}
-    call_count = {name: prior_cost_and_count(log_task, name)[1] for name in judges}
 
     print(f"Task {task} (log={log_task}): {len(items)} items x {len(orders)} order(s) x {len(judges)} judges"
-          f"{' (PILOT)' if pilot is not None else ''}{' (CONSISTENCY)' if consistency is not None else ''}")
+          f"{' (PILOT)' if pilot is not None else ''}{' (CONSISTENCY)' if consistency is not None else ''}"
+          f"{' (DRY-RUN)' if dry_run else ''}")
 
+    remaining = 0
     for name, cfg in judges.items():
         already = done_keys(log_task, name)
         todo = [(it, o) for it in items for o in orders if (it["item_id"], o) not in already]
+        remaining += len(todo)
         print(f"  judge {name} ({cfg['model']}): {len(already)} done, {len(todo)} to do")
+        if dry_run:
+            continue  # plan only: no API call, no write, existing logs stay untouched
         for item, order in todo:
-            # Budget guard: outside a pilot/consistency check, stop before a call if the projected
-            # full cost is too high.
-            if pilot is None and consistency is None and call_count[name] > 0:
-                projected = project_full_cost(cost_sum, call_count, judges)
+            # Budget guard: re-read EVERY judge's logs (not just this process) so four parallel
+            # --judge processes share one spend picture. Pilots and consistency checks skip it.
+            if pilot is None and consistency is None:
+                projected = project_from_logs()
                 if projected > max_budget:
                     sys.exit(f"BUDGET STOP: projected full-run cost ${projected:,.2f} exceeds "
                              f"MAX_BUDGET_USD ${max_budget:,.2f}. Nothing further was run.")
-            # Build the messages for this task and order.
             if task.endswith("pairwise"):
                 a, b = (item["response_a"], item["response_b"]) if order == "AB" \
                     else (item["response_b"], item["response_a"])
@@ -424,11 +471,10 @@ def run(task: str, pilot: int | None, consistency: int | None = None) -> None:
                 record["direct_scores"] = scores
                 record["parse_ok"] = scores is not None
             append_log(log_task, name, record)
-            cost_sum[name] += result["cost_usd"]
-            call_count[name] += 1
 
-    if pilot is not None and consistency is None:
+    if pilot is not None and consistency is None and not dry_run:
         report_pilot(task, judges)
+    return remaining
 
 
 def project_full_cost(cost_sum: dict, call_count: dict, judges: dict) -> float:
@@ -506,20 +552,32 @@ def report_pilot(task: str, judges: dict) -> None:
 # ---------------------------------------------------------------------------------------------
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the four LLM judges over the PARIKSHA data.")
-    parser.add_argument("--task", choices=list(TASKS),
-                        help="which table to judge (not needed with --consistency)")
+    parser.add_argument("--task", choices=[*TASKS, "all"],
+                        help="which table to judge, or 'all' for tamil_pairwise then "
+                             "tamil_direct then hindi_pairwise (not needed with --consistency)")
+    parser.add_argument("--judge", dest="judges", action="append", choices=list(JUDGE_NAMES),
+                        help="run only this judge (repeatable). Default: all four. "
+                             "One process per --judge can run at the same time.")
     parser.add_argument("--pilot", type=int, default=None, metavar="N",
                         help="judge only the first N items (for a cost/quality pilot)")
     parser.add_argument("--consistency", type=int, default=None, metavar="N",
                         help="re-run the first N Tamil pairs in A/B order only, for FRONTIER and "
                              "LOW_COST, logging to results/judgements/consistency__*.jsonl")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="print the work plan and skip every API call and every log write")
     args = parser.parse_args()
+    tasks = list(TASK_ORDER) if args.task == "all" else ([args.task] if args.task else [])
+    remaining = 0
     if args.consistency is not None:
-        run("tamil_pairwise", pilot=None, consistency=args.consistency)
-    elif not args.task:
+        remaining += run("tamil_pairwise", pilot=None, consistency=args.consistency,
+                         judge_names=args.judges, dry_run=args.dry_run)
+    elif not tasks:
         parser.error("--task is required unless --consistency is set")
     else:
-        run(args.task, args.pilot)
+        for task in tasks:
+            remaining += run(task, args.pilot, judge_names=args.judges, dry_run=args.dry_run)
+    if args.dry_run:
+        print(f"DRY-RUN: {remaining} call(s) would be made. No API requests, no log writes.")
 
 
 if __name__ == "__main__":
