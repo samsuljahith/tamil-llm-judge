@@ -25,9 +25,10 @@
       "family": "gpt",
       "supports_temperature": false,
       "reasoning_effort": "minimal",
+      "rpm_limit": 20,
       "max_output_tokens": 4096,
       "price_per_1m": { "input": 0.75, "output": 4.5 },
-      "note": "closest available mini; generation differs by one. There is no openai/gpt-5.5-mini on OpenRouter as of 2026-10-20, so the mini of the previous generation (gpt-5.4-mini) is used, as instructed."
+      "note": "closest available mini; generation differs by one. There is no openai/gpt-5.5-mini on OpenRouter as of 2026-10-20, so the mini of the previous generation (gpt-5.4-mini) is used, as instructed. rpm_limit 20 is OpenRouter's new-account cap for this model (hit 429 three times in the Tamil pairwise pilot)."
     },
     "sea_lion": {
       "provider": "sealion",

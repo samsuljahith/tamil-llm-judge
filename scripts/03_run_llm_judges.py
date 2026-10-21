@@ -344,36 +344,45 @@ def append_log(task: str, judge: str, record: dict) -> None:
 # ---------------------------------------------------------------------------------------------
 # Running one task
 # ---------------------------------------------------------------------------------------------
-def run(task: str, pilot: int | None) -> None:
+def run(task: str, pilot: int | None, consistency: int | None = None) -> None:
     config = load_config()
     keys = load_keys()
     seed = int(config.get("seed", 42))
     max_budget = float(config.get("max_budget_usd", 100))
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Self-consistency re-runs a subset of Tamil pairs in the A/B order only, for the two OpenAI
+    # judges, and writes a SEPARATE log so the original pilot records are not overwritten.
+    log_task = "consistency" if consistency else task
     prompt_by_id, response_by_key = load_prompts_and_responses()
     items = build_items(task, prompt_by_id, response_by_key)
-    if pilot is not None:
-        items = items[:pilot]  # the first N items, deterministic because the tables are sorted
-    orders = ("AB", "BA") if task.endswith("pairwise") else ("NA",)
+    n_keep = consistency if consistency is not None else pilot
+    if n_keep is not None:
+        items = items[:n_keep]  # the first N items, deterministic because the tables are sorted
+    if consistency is not None:
+        orders = ("AB",)  # original presentation order only
+        judges = {k: v for k, v in config["judges"].items() if k in ("frontier", "low_cost")}
+    else:
+        orders = ("AB", "BA") if task.endswith("pairwise") else ("NA",)
+        judges = config["judges"]
 
-    judges = config["judges"]
     clients = {name: make_client(cfg, keys) for name, cfg in judges.items()}
     limiters = {name: RateLimiter(cfg.get("rpm_limit")) for name, cfg in judges.items()}
-    # Seed the running cost/count from any previous run of this task, so the budget guard is accurate.
-    cost_sum = {name: prior_cost_and_count(task, name)[0] for name in judges}
-    call_count = {name: prior_cost_and_count(task, name)[1] for name in judges}
+    # Seed the running cost/count from any previous run of this log stem, so the budget guard is accurate.
+    cost_sum = {name: prior_cost_and_count(log_task, name)[0] for name in judges}
+    call_count = {name: prior_cost_and_count(log_task, name)[1] for name in judges}
 
-    print(f"Task {task}: {len(items)} items x {len(orders)} order(s) x {len(judges)} judges"
-          f"{' (PILOT)' if pilot is not None else ''}")
+    print(f"Task {task} (log={log_task}): {len(items)} items x {len(orders)} order(s) x {len(judges)} judges"
+          f"{' (PILOT)' if pilot is not None else ''}{' (CONSISTENCY)' if consistency is not None else ''}")
 
     for name, cfg in judges.items():
-        already = done_keys(task, name)
+        already = done_keys(log_task, name)
         todo = [(it, o) for it in items for o in orders if (it["item_id"], o) not in already]
         print(f"  judge {name} ({cfg['model']}): {len(already)} done, {len(todo)} to do")
         for item, order in todo:
-            # Budget guard: outside a pilot, stop before a call if the projected full cost is too high.
-            if pilot is None and call_count[name] > 0:
+            # Budget guard: outside a pilot/consistency check, stop before a call if the projected
+            # full cost is too high.
+            if pilot is None and consistency is None and call_count[name] > 0:
                 projected = project_full_cost(cost_sum, call_count, judges)
                 if projected > max_budget:
                     sys.exit(f"BUDGET STOP: projected full-run cost ${projected:,.2f} exceeds "
@@ -385,10 +394,10 @@ def run(task: str, pilot: int | None) -> None:
                 messages = pairwise_messages(item, a, b)
             else:
                 messages = direct_messages(item)
-            limiters[name].wait()  # respect the SEA-LION 10 rpm limit (no-op for the others)
+            limiters[name].wait()  # SEA-LION 10 rpm; LOW_COST 20 rpm (OpenRouter new-account cap)
             timestamp = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
             record = {
-                "schema": 1, "task": task, "judge": name, "provider": cfg["provider"],
+                "schema": 1, "task": log_task, "judge": name, "provider": cfg["provider"],
                 "model": cfg["model"], "snapshot": cfg["snapshot"],
                 "language": item["language"], "item_id": item["item_id"],
                 "prompt_id": item["prompt_id"], "order": order, "timestamp": timestamp,
@@ -398,7 +407,7 @@ def run(task: str, pilot: int | None) -> None:
                 result = call_judge(clients[name], cfg, seed, messages)
             except Exception as exc:  # network/API error: log it and move on; it will be retried next run
                 record.update({"error": f"{type(exc).__name__}: {str(exc)[:300]}"})
-                append_log(task, name, record)
+                append_log(log_task, name, record)
                 print(f"    ! {name} {item['item_id']} {order}: {record['error']}")
                 continue
             record.update(result)
@@ -414,11 +423,11 @@ def run(task: str, pilot: int | None) -> None:
                 scores = parse_direct(result["raw_output"])
                 record["direct_scores"] = scores
                 record["parse_ok"] = scores is not None
-            append_log(task, name, record)
+            append_log(log_task, name, record)
             cost_sum[name] += result["cost_usd"]
             call_count[name] += 1
 
-    if pilot is not None:
+    if pilot is not None and consistency is None:
         report_pilot(task, judges)
 
 
@@ -497,12 +506,20 @@ def report_pilot(task: str, judges: dict) -> None:
 # ---------------------------------------------------------------------------------------------
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the four LLM judges over the PARIKSHA data.")
-    parser.add_argument("--task", required=True, choices=list(TASKS),
-                        help="which table to judge")
+    parser.add_argument("--task", choices=list(TASKS),
+                        help="which table to judge (not needed with --consistency)")
     parser.add_argument("--pilot", type=int, default=None, metavar="N",
                         help="judge only the first N items (for a cost/quality pilot)")
+    parser.add_argument("--consistency", type=int, default=None, metavar="N",
+                        help="re-run the first N Tamil pairs in A/B order only, for FRONTIER and "
+                             "LOW_COST, logging to results/judgements/consistency__*.jsonl")
     args = parser.parse_args()
-    run(args.task, args.pilot)
+    if args.consistency is not None:
+        run("tamil_pairwise", pilot=None, consistency=args.consistency)
+    elif not args.task:
+        parser.error("--task is required unless --consistency is set")
+    else:
+        run(args.task, args.pilot)
 
 
 if __name__ == "__main__":
