@@ -1,0 +1,72 @@
+{
+  "_comment": "Step 03 judge slate. Fixed BEFORE any results are seen (pre-registration). No API keys live here; keys are read from .env by their *_api_key_env variable name. Prices are USD per 1,000,000 tokens, taken from OpenRouter on 2026-10-20 and used only for projecting cost; the authoritative per-call cost is the amount the API returns in its usage data.",
+  "seed": 42,
+  "max_budget_usd": 100,
+  "judges": {
+    "frontier": {
+      "provider": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "model": "openai/gpt-5.5",
+      "snapshot": "openai/gpt-5.5",
+      "family": "gpt",
+      "supports_temperature": false,
+      "reasoning_effort": "minimal",
+      "max_output_tokens": 4096,
+      "price_per_1m": { "input": 5.0, "output": 30.0 },
+      "note": "Current OpenAI GA flagship on OpenRouter (listed 2026-04-24). Reasoning model: temperature is not a supported parameter, so it is omitted and logged as 'unsupported'. Reasoning effort is set to the lowest level the model accepts."
+    },
+    "low_cost": {
+      "provider": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "model": "openai/gpt-5.4-mini",
+      "snapshot": "openai/gpt-5.4-mini",
+      "family": "gpt",
+      "supports_temperature": false,
+      "reasoning_effort": "minimal",
+      "max_output_tokens": 4096,
+      "price_per_1m": { "input": 0.75, "output": 4.5 },
+      "note": "closest available mini; generation differs by one. There is no openai/gpt-5.5-mini on OpenRouter as of 2026-10-20, so the mini of the previous generation (gpt-5.4-mini) is used, as instructed."
+    },
+    "sea_lion": {
+      "provider": "sealion",
+      "base_url": "https://api.sea-lion.ai/v1",
+      "api_key_env": "SEA_LION_API_KEY",
+      "model": "aisingapore/Gemma-SEA-LION-v4-27B-IT",
+      "snapshot": "aisingapore/Gemma-SEA-LION-v4-27B-IT",
+      "family": "gemma",
+      "supports_temperature": true,
+      "temperature": 0,
+      "reasoning_effort": null,
+      "rpm_limit": 10,
+      "max_output_tokens": 1024,
+      "price_per_1m": { "input": 0.0, "output": 0.0 },
+      "note": "AI Singapore SEA-LION API. Free but rate-limited to 10 requests/min/user (slowest judge). Must be confirmed as served by GET /v1/models before use (step 02 of the plan)."
+    },
+    "base_model": {
+      "provider": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "model": "google/gemma-3-27b-it",
+      "snapshot": "google/gemma-3-27b-it",
+      "family": "gemma",
+      "supports_temperature": true,
+      "temperature": 0,
+      "reasoning_effort": null,
+      "max_output_tokens": 1024,
+      "price_per_1m": { "input": 0.08, "output": 0.35 },
+      "note": "The documented parent of Gemma-SEA-LION-v4-27B-IT (Gemma 3 27B IT). Same base, same size, with vs without SEA regional tuning: the regional-tuning control for RQ1 novelty point 2."
+    }
+  },
+  "model_families": {
+    "_comment": "PARIKSHA response models grouped by the judge family that shares their lineage, for the RQ2 self-preference test. Fixed before results are seen. All four gemma members are present in data/processed/responses.csv.",
+    "gpt": ["gpt-4", "GPT4o", "gpt-35-turbo"],
+    "gemma": [
+      "google/gemma-7b-it",
+      "Telugu-LLM-Labs/Indic-gemma-7b-finetuned-sft-Navarasa-2.0",
+      "GenVRadmin/AryaBhatta-GemmaOrca-Merged",
+      "GenVRadmin/AryaBhatta-GemmaUltra-Merged"
+    ]
+  }
+}

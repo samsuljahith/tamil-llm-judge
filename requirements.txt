@@ -1,4 +1,7 @@
 # Python 3.11 or newer (tested with Python 3.13). Pinned for reproducibility.
 numpy==2.5.3
 pandas==3.0.5
-# Later steps will add: python-dotenv, the judges' API clients, scipy, scikit-learn, torch, transformers.
+# Step 03 (LLM judges): .env loading and the OpenAI-compatible client used for both OpenRouter and SEA-LION.
+python-dotenv==1.2.4
+openai==3.35.1
+# Later steps will add: scipy, scikit-learn, torch, transformers.
