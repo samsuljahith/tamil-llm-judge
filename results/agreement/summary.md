@@ -17,6 +17,39 @@ Unique pairs only (Tamil 1,820, Hindi 1,000). Ties kept. `parse_ok=false` treate
 | hindi | base_model | 1000 | 0.708 | 0.506 | 0.7353 |
 | hindi | gpt4_32k | 1000 | 0.774 | 0.583 | 0.8164 |
 
+## Per-call mix and swap-aggregation (RQ3)
+
+Each LLM call is one order. Swap-aggregation sets a tie when A/B and mapped B/A disagree, which raises the tie rate and (on Tamil) kappa. `kappa_gain` = swap κ minus the mean of the two single-order κ.
+
+| language | judge | view | n | %A | %B | %tie | accuracy | kappa | kappa_gain |
+|---|---|---|---|---|---|---|---|---|---|
+| tamil | frontier | ab | 1820 | 50.05 | 44.89 | 5.05 | 0.635 | 0.448 |  |
+| tamil | frontier | ba | 1819 | 45.9 | 48.82 | 5.28 | 0.642 | 0.456 |  |
+| tamil | frontier | swap_agg | 1819 | 44.8 | 43.82 | 11.38 | 0.664 | 0.492 | 0.040 |
+| tamil | low_cost | ab | 1820 | 51.32 | 48.08 | 0.6 | 0.599 | 0.392 |  |
+| tamil | low_cost | ba | 1820 | 49.62 | 50.0 | 0.38 | 0.604 | 0.399 |  |
+| tamil | low_cost | swap_agg | 1820 | 45.49 | 44.07 | 10.44 | 0.631 | 0.442 | 0.046 |
+| tamil | sea_lion | ab | 1820 | 45.71 | 50.6 | 3.68 | 0.636 | 0.448 |  |
+| tamil | sea_lion | ba | 1820 | 49.84 | 45.55 | 4.62 | 0.650 | 0.471 |  |
+| tamil | sea_lion | swap_agg | 1820 | 42.8 | 43.08 | 14.12 | 0.676 | 0.510 | 0.051 |
+| tamil | base_model | ab | 1818 | 45.6 | 50.99 | 3.41 | 0.636 | 0.447 |  |
+| tamil | base_model | ba | 1820 | 50.27 | 45.77 | 3.96 | 0.647 | 0.465 |  |
+| tamil | base_model | swap_agg | 1818 | 42.63 | 43.01 | 14.36 | 0.672 | 0.505 | 0.049 |
+| tamil | gpt4_32k | ab | 1820 | 51.7 | 45.38 | 2.91 | 0.613 | 0.413 |  |
+| hindi | frontier | ab | 1000 | 45.9 | 53.8 | 0.3 | 0.742 | 0.514 |  |
+| hindi | frontier | ba | 1000 | 46.4 | 53.3 | 0.3 | 0.733 | 0.498 |  |
+| hindi | frontier | swap_agg | 1000 | 43.9 | 51.3 | 4.8 | 0.727 | 0.503 | -0.003 |
+| hindi | low_cost | ab | 1000 | 46.7 | 53.3 | 0.0 | 0.710 | 0.453 |  |
+| hindi | low_cost | ba | 1000 | 49.5 | 50.5 | 0.0 | 0.716 | 0.466 |  |
+| hindi | low_cost | swap_agg | 1000 | 43.7 | 47.5 | 8.8 | 0.690 | 0.453 | -0.006 |
+| hindi | sea_lion | ab | 1000 | 42.5 | 56.6 | 0.9 | 0.761 | 0.551 |  |
+| hindi | sea_lion | ba | 1000 | 52.2 | 46.6 | 1.2 | 0.753 | 0.540 |  |
+| hindi | sea_lion | swap_agg | 1000 | 41.3 | 45.4 | 13.3 | 0.714 | 0.511 | -0.035 |
+| hindi | base_model | ab | 1000 | 41.8 | 57.0 | 1.2 | 0.758 | 0.546 |  |
+| hindi | base_model | ba | 1000 | 53.5 | 45.4 | 1.1 | 0.760 | 0.553 |  |
+| hindi | base_model | swap_agg | 1000 | 40.8 | 44.3 | 14.9 | 0.708 | 0.506 | -0.044 |
+| hindi | gpt4_32k | ab | 1000 | 51.2 | 46.4 | 2.4 | 0.774 | 0.583 |  |
+
 ## Human ceiling (mean pairwise Cohen's kappa)
 
 | language | judge | human–human | judge–human | gap |
@@ -36,8 +69,8 @@ Unique pairs only (Tamil 1,820, Hindi 1,000). Ties kept. `parse_ok=false` treate
 
 - tamil humans: 31.7% ties
 - hindi humans: 6.3% ties
-- tamil judges: frontier 11.4%, low_cost 10.4%, sea_lion 14.1%, base_model 14.4%, gpt4_32k 2.9%
-- hindi judges: frontier 4.8%, low_cost 8.8%, sea_lion 13.3%, base_model 14.9%, gpt4_32k 2.4%
+- tamil judges (swap-agg / gpt4 A/B): frontier 11.4%, low_cost 10.4%, sea_lion 14.1%, base_model 14.4%, gpt4_32k 2.9%
+- hindi judges (swap-agg / gpt4 A/B): frontier 4.8%, low_cost 8.8%, sea_lion 13.3%, base_model 14.9%, gpt4_32k 2.4%
 
 ## Position bias (LLM judges, both orders)
 
@@ -84,6 +117,31 @@ Unique pairs only (Tamil 1,820, Hindi 1,000). Ties kept. `parse_ok=false` treate
 | hindi | base_model | gemma | 345 | 41.45 | 48.41 |
 | hindi | gpt4_32k | gpt | 260 | 61.92 | 58.27 |
 
+## Bootstrap 95% CIs: judge minus human (length % and self-preference)
+
+| language | judge | metric | estimate | 95% CI |
+|---|---|---|---|---|
+| tamil | frontier | length_minus_human | -0.057 | [-0.086, -0.026] |
+| tamil | frontier | selfpref_minus_human | 0.042 | [0.000, 0.083] |
+| tamil | low_cost | length_minus_human | -0.065 | [-0.090, -0.039] |
+| tamil | low_cost | selfpref_minus_human | 0.023 | [-0.022, 0.064] |
+| tamil | sea_lion | length_minus_human | -0.026 | [-0.055, 0.004] |
+| tamil | sea_lion | selfpref_minus_human | -0.013 | [-0.051, 0.024] |
+| tamil | base_model | length_minus_human | -0.023 | [-0.053, 0.005] |
+| tamil | base_model | selfpref_minus_human | -0.015 | [-0.052, 0.019] |
+| tamil | gpt4_32k | length_minus_human | 0.043 | [0.006, 0.082] |
+| tamil | gpt4_32k | selfpref_minus_human | 0.081 | [0.036, 0.127] |
+| hindi | frontier | length_minus_human | -0.084 | [-0.114, -0.053] |
+| hindi | frontier | selfpref_minus_human | 0.095 | [0.006, 0.179] |
+| hindi | low_cost | length_minus_human | -0.114 | [-0.146, -0.082] |
+| hindi | low_cost | selfpref_minus_human | 0.101 | [0.021, 0.182] |
+| hindi | sea_lion | length_minus_human | -0.052 | [-0.085, -0.023] |
+| hindi | sea_lion | selfpref_minus_human | -0.086 | [-0.144, -0.033] |
+| hindi | base_model | length_minus_human | -0.049 | [-0.079, -0.021] |
+| hindi | base_model | selfpref_minus_human | -0.070 | [-0.126, -0.020] |
+| hindi | gpt4_32k | length_minus_human | -0.030 | [-0.064, 0.001] |
+| hindi | gpt4_32k | selfpref_minus_human | 0.036 | [-0.017, 0.096] |
+
 ## Leaderboard ranking agreement (Kendall's tau vs human win rates)
 
 | language | judge | n models | tau | p |
@@ -120,5 +178,27 @@ Unique pairs only (Tamil 1,820, Hindi 1,000). Ties kept. `parse_ok=false` treate
 | low_cost | 280 | 0.685 | 0.583 | 0.544 | 0.665 | 0.127 |
 | sea_lion | 280 | 0.764 | 0.676 | 0.632 | 0.670 | 0.177 |
 | base_model | 280 | 0.771 | 0.677 | 0.643 | 0.670 | 0.184 |
+
+## Tamil confusion (swap-aggregated judge vs human_majority)
+
+Rows = human majority; columns = judge. Off-diagonal human-tie cells are the missed-tie mass.
+
+### sea_lion
+
+| human \ judge | A | B | tie | total |
+|---|---|---|---|---|
+| A | 510 | 39 | 46 | 595 |
+| B | 51 | 553 | 44 | 648 |
+| tie | 218 | 192 | 167 | 577 |
+| total | 779 | 784 | 257 | 1820 |
+
+### frontier
+
+| human \ judge | A | B | tie | total |
+|---|---|---|---|---|
+| A | 513 | 48 | 34 | 595 |
+| B | 58 | 556 | 34 | 648 |
+| tie | 244 | 193 | 139 | 576 |
+| total | 815 | 797 | 207 | 1819 |
 
 All numbers are computed from `results/judgements_clean/` and `data/processed/`. No new API calls.

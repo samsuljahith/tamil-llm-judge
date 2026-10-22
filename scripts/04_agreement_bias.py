@@ -216,14 +216,29 @@ def human_ceiling_row(df: pd.DataFrame, language: str, judge: str, col: str) -> 
     }
 
 
-def verdict_rows(df: pd.DataFrame, language: str, judge: str, col: str) -> list[dict]:
+def verdict_rows(df: pd.DataFrame, language: str, judge: str, col: str, view: str = MAIN_VIEW) -> list[dict]:
     m = df[col].isin(LABELS)
     n = int(m.sum())
     counts = df.loc[m, col].value_counts()
-    return [{"language": language, "judge": judge, "n": n,
+    return [{"language": language, "judge": judge, "view": view, "n": n,
              "label": lab, "count": int(counts.get(lab, 0)),
              "pct": round(100 * counts.get(lab, 0) / n, 2) if n else None}
             for lab in LABELS]
+
+
+def mix_pcts(df: pd.DataFrame, col: str) -> dict:
+    """% A / B / tie for one verdict column (unique pairs with a valid label)."""
+    m = df[col].isin(LABELS)
+    n = int(m.sum())
+    counts = df.loc[m, col].value_counts()
+    return {f"pct_{lab}": None if n == 0 else round(100 * counts.get(lab, 0) / n, 2) for lab in LABELS} | {"n_mix": n}
+
+
+def order_comparison_row(df: pd.DataFrame, language: str, judge: str, view: str, col: str) -> dict:
+    """One row of the RQ3 table: mix + agreement for a single view (ab / ba / swap_agg)."""
+    agr = agreement_row(df, language, judge, view, col)
+    mix = mix_pcts(df, col)
+    return {**agr, **mix}
 
 
 def position_row(df: pd.DataFrame, language: str, judge: str) -> dict:
@@ -396,6 +411,59 @@ def kappa_np_ok(j: np.ndarray, h: np.ndarray) -> float:
     return kappa_np(j[ok], h[ok]) if ok.any() else float("nan")
 
 
+def pct_longer_np(verdict: np.ndarray, chars_a: np.ndarray, chars_b: np.ndarray) -> float:
+    """Share of non-tie, unequal-length pairs where the verdict picks the longer answer."""
+    ok = pd.Series(verdict).isin(("A", "B")).to_numpy() & (chars_a != chars_b)
+    if not ok.any():
+        return float("nan")
+    v, a, b = verdict[ok], chars_a[ok], chars_b[ok]
+    chose_longer = np.where(v == "A", a > b, b > a)
+    return float(np.mean(chose_longer))
+
+
+def family_pick_np(verdict: np.ndarray, fam_a: np.ndarray, exclusive: np.ndarray) -> float:
+    """Family pick rate (tie = 0.5) on pairs where exactly one response is from the family."""
+    ok = exclusive & pd.Series(verdict).isin(LABELS).to_numpy()
+    if not ok.any():
+        return float("nan")
+    v, fa = verdict[ok], fam_a[ok]
+    return float(np.mean(np.where(v == "A", fa, np.where(v == "B", ~fa, 0.5))))
+
+
+def bootstrap_bias(df: pd.DataFrame, col: str, family_models: set[str],
+                   rng: np.random.Generator) -> dict[str, np.ndarray]:
+    """Prompt-clustered bootstrap of (judge − human) for length % and family-pick %."""
+    _, clusters = prompt_clusters(df)
+    judge_v = df[col].to_numpy()
+    human_v = df["human_majority"].to_numpy()
+    chars_a = df["chars_a"].to_numpy()
+    chars_b = df["chars_b"].to_numpy()
+    fam_a = df.model_a.isin(family_models).to_numpy()
+    fam_b = df.model_b.isin(family_models).to_numpy()
+    exclusive = fam_a ^ fam_b
+    length_d = np.empty(N_BOOT)
+    self_d = np.empty(N_BOOT)
+    for b in range(N_BOOT):
+        pos = resample_positions(clusters, rng)
+        length_d[b] = (pct_longer_np(judge_v[pos], chars_a[pos], chars_b[pos])
+                       - pct_longer_np(human_v[pos], chars_a[pos], chars_b[pos]))
+        self_d[b] = (family_pick_np(judge_v[pos], fam_a[pos], exclusive[pos])
+                     - family_pick_np(human_v[pos], fam_a[pos], exclusive[pos]))
+    return {"length_minus_human": length_d, "selfpref_minus_human": self_d}
+
+
+def confusion_frame(df: pd.DataFrame, judge_col: str) -> pd.DataFrame:
+    """Judge (columns) vs human_majority (rows) on unique pairs with both labels present."""
+    m = pair_mask(df, judge_col, "human_majority")
+    cm = pd.crosstab(df.loc[m, "human_majority"], df.loc[m, judge_col],
+                     rownames=["human_majority"], colnames=["judge"])
+    cm = cm.reindex(index=list(LABELS), columns=list(LABELS), fill_value=0)
+    cm["total"] = cm.sum(axis=1)
+    total = cm.sum(axis=0).to_frame().T
+    total.index = ["total"]
+    return pd.concat([cm, total])
+
+
 def bootstrap_delta_two_langs(df_ta: pd.DataFrame, df_hi: pd.DataFrame, col: str,
                               rng: np.random.Generator) -> np.ndarray:
     """Independent prompt-clustered bootstrap of Tamil kappa minus Hindi kappa, same judge."""
@@ -478,9 +546,22 @@ def _direct_one(judge: str, frame: pd.DataFrame, la, tq, h, score) -> dict:
 # ---------------------------------------------------------------------------------------------
 # Summary markdown
 # ---------------------------------------------------------------------------------------------
+def _cm_md(cm: pd.DataFrame, title: str) -> list[str]:
+    """Markdown table for a 3×3 confusion matrix with row/column totals."""
+    lines = ["", f"### {title}", "",
+             "| human \\ judge | A | B | tie | total |",
+             "|---|---|---|---|---|"]
+    for idx in (*LABELS, "total"):
+        r = cm.loc[idx]
+        lines.append(f"| {idx} | {int(r.A)} | {int(r.B)} | {int(r.tie)} | {int(r.total)} |")
+    return lines
+
+
 def write_summary(agreement: pd.DataFrame, ceiling: pd.DataFrame, position: pd.DataFrame,
                   length: pd.DataFrame, selfpref: pd.DataFrame, tau: pd.DataFrame,
-                  contrasts: pd.DataFrame, direct: pd.DataFrame, dist: pd.DataFrame) -> None:
+                  contrasts: pd.DataFrame, direct: pd.DataFrame, dist: pd.DataFrame,
+                  orders: pd.DataFrame, bias_boot: pd.DataFrame,
+                  cm_sea: pd.DataFrame, cm_front: pd.DataFrame) -> None:
     def k(lang, judge):
         row = agreement[(agreement.language == lang) & (agreement.judge == judge)
                         & (agreement.view == ("ab" if judge == "gpt4_32k" else MAIN_VIEW))]
@@ -505,6 +586,16 @@ def write_summary(agreement: pd.DataFrame, ceiling: pd.DataFrame, position: pd.D
                 continue
             lines.append(f"| {lang} | {judge} | {r.n} | {r.accuracy:.3f} | {r.kappa:.3f} | "
                          f"{r.accuracy_human_nontie} |")
+    lines += ["", "## Per-call mix and swap-aggregation (RQ3)", "",
+              "Each LLM call is one order. Swap-aggregation sets a tie when A/B and mapped B/A disagree, "
+              "which raises the tie rate and (on Tamil) kappa. `kappa_gain` = swap κ minus the mean of the two single-order κ.",
+              "",
+              "| language | judge | view | n | %A | %B | %tie | accuracy | kappa | kappa_gain |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
+    for _, r in orders.iterrows():
+        gain = "" if pd.isna(r.get("kappa_gain", np.nan)) else f"{r.kappa_gain:.3f}"
+        lines.append(f"| {r.language} | {r.judge} | {r.view} | {r.n} | {r.pct_A} | {r.pct_B} | "
+                     f"{r.pct_tie} | {r.accuracy:.3f} | {r.kappa:.3f} | {gain} |")
     lines += ["", "## Human ceiling (mean pairwise Cohen's kappa)", "",
               "| language | judge | human–human | judge–human | gap |",
               "|---|---|---|---|---|"]
@@ -519,10 +610,12 @@ def write_summary(agreement: pd.DataFrame, ceiling: pd.DataFrame, position: pd.D
     for lang in ("tamil", "hindi"):
         bits = []
         for judge in (*LLM_JUDGES, "gpt4_32k"):
-            row = dist[(dist.language == lang) & (dist.judge == judge) & (dist.label == "tie")]
+            view = "ab" if judge == "gpt4_32k" else "swap_agg"
+            row = dist[(dist.language == lang) & (dist.judge == judge) & (dist.label == "tie")
+                       & (dist.view == view)]
             if len(row):
                 bits.append(f"{judge} {row.iloc[0].pct:.1f}%")
-        lines.append(f"- {lang} judges: " + ", ".join(bits))
+        lines.append(f"- {lang} judges (swap-agg / gpt4 A/B): " + ", ".join(bits))
     lines += ["", "## Position bias (LLM judges, both orders)", "",
               "| language | judge | flip rate | first-position preference |",
               "|---|---|---|---|"]
@@ -539,6 +632,12 @@ def write_summary(agreement: pd.DataFrame, ceiling: pd.DataFrame, position: pd.D
     for _, r in selfpref.iterrows():
         lines.append(f"| {r.language} | {r.judge} | {r.family} | {r.n_exclusive} | "
                      f"{r.judge_family_pick_pct} | {r.human_family_pick_pct} |")
+    lines += ["", "## Bootstrap 95% CIs: judge minus human (length % and self-preference)", "",
+              "| language | judge | metric | estimate | 95% CI |",
+              "|---|---|---|---|---|"]
+    for _, r in bias_boot.iterrows():
+        lines.append(f"| {r.language} | {r.judge} | {r.metric} | {r.estimate:.3f} | "
+                     f"[{r.ci_low:.3f}, {r.ci_high:.3f}] |")
     lines += ["", "## Leaderboard ranking agreement (Kendall's tau vs human win rates)", "",
               "| language | judge | n models | tau | p |",
               "|---|---|---|---|---|"]
@@ -556,6 +655,11 @@ def write_summary(agreement: pd.DataFrame, ceiling: pd.DataFrame, position: pd.D
     for _, r in direct.iterrows():
         lines.append(f"| {r.judge} | {r.n_score} | {r.spearman_score:.3f} | {r.qwk_score:.3f} | "
                      f"{r.qwk_LA:.3f} | {r.qwk_TQ:.3f} | {r.qwk_H:.3f} |")
+    lines += ["", "## Tamil confusion (swap-aggregated judge vs human_majority)",
+              "",
+              "Rows = human majority; columns = judge. Off-diagonal human-tie cells are the missed-tie mass."]
+    lines += _cm_md(cm_sea, "sea_lion")
+    lines += _cm_md(cm_front, "frontier")
     lines += ["", "All numbers are computed from `results/judgements_clean/` and `data/processed/`. "
               "No new API calls.", ""]
     (OUT / "summary.md").write_text("\n".join(lines), encoding="utf-8")
@@ -572,31 +676,34 @@ def main() -> None:
     families = {k: set(v) for k, v in config["model_families"].items() if not k.startswith("_")}
     judge_cfg = config["judges"]
     rng = np.random.default_rng(SEED)
+    # Separate stream so the new bias CIs do not consume draws from the kappa/contrast bootstrap.
+    rng_bias = np.random.default_rng(SEED + 1)
 
     frames = {lang: attach_all_judges(load_pairs(lang), lang) for lang in ("tamil", "hindi")}
 
-    agreement, ceiling, dist, position, length, selfpref = [], [], [], [], [], []
+    agreement, ceiling, dist, position, length, selfpref, orders = [], [], [], [], [], [], []
     lb_tables, tau_tables = [], []
-    boot_ci = []
+    boot_ci, bias_boot = [], []
     # Point estimates.
     for lang, df in frames.items():
         # Humans as a reference distribution.
-        dist.extend(verdict_rows(df, lang, "human_majority", "human_majority"))
-        dist.extend(verdict_rows(df, lang, "gpt4_32k", "gpt4_32k_ab"))
+        dist.extend(verdict_rows(df, lang, "human_majority", "human_majority", view="human"))
+        dist.extend(verdict_rows(df, lang, "gpt4_32k", "gpt4_32k_ab", view="ab"))
         length.append(length_row(df, lang, "human_majority", "human_majority"))
         judge_cols = {"gpt4_32k": "gpt4_32k_ab"}
         for judge in LLM_JUDGES:
-            agreement.append(agreement_row(df, lang, judge, "ab", f"{judge}_ab"))
-            agreement.append(agreement_row(df, lang, judge, "ba", f"{judge}_ba"))
-            agreement.append(agreement_row(df, lang, judge, "swap_agg", f"{judge}_swap"))
+            for view, col in (("ab", f"{judge}_ab"), ("ba", f"{judge}_ba"), ("swap_agg", f"{judge}_swap")):
+                agreement.append(agreement_row(df, lang, judge, view, col))
+                dist.extend(verdict_rows(df, lang, judge, col, view=view))
+                orders.append(order_comparison_row(df, lang, judge, view, col))
             ceiling.append(human_ceiling_row(df, lang, judge, f"{judge}_swap"))
-            dist.extend(verdict_rows(df, lang, judge, f"{judge}_swap"))
             position.append(position_row(df, lang, judge))
             length.append(length_row(df, lang, judge, f"{judge}_swap"))
             fam = judge_cfg[judge]["family"]
             selfpref.append(self_pref_row(df, lang, judge, f"{judge}_swap", fam, families[fam]))
             judge_cols[judge] = f"{judge}_swap"
         agreement.append(agreement_row(df, lang, "gpt4_32k", "ab", "gpt4_32k_ab"))
+        orders.append(order_comparison_row(df, lang, "gpt4_32k", "ab", "gpt4_32k_ab"))
         ceiling.append(human_ceiling_row(df, lang, "gpt4_32k", "gpt4_32k_ab"))
         length.append(length_row(df, lang, "gpt4_32k", "gpt4_32k_ab"))
         selfpref.append(self_pref_row(df, lang, "gpt4_32k", "gpt4_32k_ab", "gpt", families["gpt"]))
@@ -616,6 +723,14 @@ def main() -> None:
                 boot_ci.append({"language": lang, "judge": judge, "metric": metric,
                                 "estimate": round(float(np.nanmean(arr)), 4),
                                 "ci_low": round(lo, 4), "ci_high": round(hi, 4)})
+            fam = "gpt" if judge == "gpt4_32k" else judge_cfg[judge]["family"]
+            print(f"  bootstrap bias {lang} {judge} ...", flush=True)
+            for metric, arr in bootstrap_bias(df, col, families[fam], rng_bias).items():
+                lo, hi = ci95(arr)
+                bias_boot.append({"language": lang, "judge": judge, "metric": metric,
+                                  "estimate": round(float(np.nanmean(arr)), 4),
+                                  "ci_low": round(lo, 4), "ci_high": round(hi, 4),
+                                  "p_boot": round(two_sided_p(arr), 4)})
 
     # Pre-specified paired contrasts.
     print("  bootstrap contrasts ...", flush=True)
@@ -656,6 +771,24 @@ def main() -> None:
     tau_df = pd.concat(tau_tables, ignore_index=True)
     lb_df = pd.concat(lb_tables, ignore_index=True)
     boot_df = pd.DataFrame(boot_ci)
+    orders_df = pd.DataFrame(orders)
+    # kappa_gain: how much swap-aggregation lifts kappa over the mean of the two single-order kappas.
+    orders_df["kappa_gain"] = np.nan
+    for (lang, judge), grp in orders_df.groupby(["language", "judge"]):
+        k_ab = grp.loc[grp.view == "ab", "kappa"]
+        k_ba = grp.loc[grp.view == "ba", "kappa"]
+        k_sw = grp.loc[grp.view == "swap_agg", "kappa"]
+        if len(k_ab) and len(k_ba) and len(k_sw):
+            gain = float(k_sw.iloc[0] - 0.5 * (k_ab.iloc[0] + k_ba.iloc[0]))
+            orders_df.loc[(orders_df.language == lang) & (orders_df.judge == judge)
+                          & (orders_df.view == "swap_agg"), "kappa_gain"] = round(gain, 4)
+    bias_boot_df = pd.DataFrame(bias_boot)
+
+    tamil = frames["tamil"]
+    cm_sea = confusion_frame(tamil, "sea_lion_swap")
+    cm_front = confusion_frame(tamil, "frontier_swap")
+    cm_sea.to_csv(OUT / "confusion_tamil_sea_lion.csv")
+    cm_front.to_csv(OUT / "confusion_tamil_frontier.csv")
 
     agreement_df.to_csv(OUT / "agreement.csv", index=False)
     ceiling_df.to_csv(OUT / "human_ceiling.csv", index=False)
@@ -668,8 +801,11 @@ def main() -> None:
     boot_df.to_csv(OUT / "bootstrap_ci.csv", index=False)
     contrasts.to_csv(OUT / "bootstrap_contrasts.csv", index=False)
     direct.to_csv(OUT / "direct_agreement.csv", index=False)
+    orders_df.to_csv(OUT / "order_comparison.csv", index=False)
+    bias_boot_df.to_csv(OUT / "bootstrap_bias.csv", index=False)
     write_summary(agreement_df, ceiling_df, position_df, length_df, selfpref_df,
-                  tau_df, contrasts, direct, dist_df)
+                  tau_df, contrasts, direct, dist_df, orders_df, bias_boot_df,
+                  cm_sea, cm_front)
     print(f"Wrote {len(list(OUT.glob('*')))} files under {OUT.relative_to(ROOT).as_posix()}/")
 
 
