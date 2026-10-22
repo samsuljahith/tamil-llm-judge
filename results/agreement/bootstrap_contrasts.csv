@@ -1,0 +1,8 @@
+contrast,estimate,ci_low,ci_high,p_boot,p_holm
+kappa tamil: sea_lion − base_model,0.0059,-0.0087,0.0212,0.427,1.0
+kappa hindi: sea_lion − base_model,0.0047,-0.0119,0.0205,0.579,1.0
+kappa frontier: tamil − hindi,-0.0114,-0.099,0.0752,0.803,1.0
+kappa low_cost: tamil − hindi,-0.0103,-0.1026,0.0836,0.828,1.0
+kappa sea_lion: tamil − hindi,-0.0015,-0.101,0.0944,0.972,1.0
+kappa base_model: tamil − hindi,-0.0008,-0.0906,0.0824,0.972,1.0
+kappa gpt4_32k: tamil − hindi,-0.1697,-0.2578,-0.0857,0.0,0.0

@@ -1,0 +1,11 @@
+language,judge,n_models,kendall_tau,pvalue
+tamil,gpt4_32k,14,0.7143,0.000145
+tamil,frontier,14,0.8901,0.0
+tamil,low_cost,14,0.8716,1.8e-05
+tamil,sea_lion,14,0.8901,0.0
+tamil,base_model,14,0.8681,1e-06
+hindi,gpt4_32k,20,0.7441,5e-06
+hindi,frontier,20,0.7263,1e-06
+hindi,low_cost,20,0.6807,2.8e-05
+hindi,sea_lion,20,0.6947,3e-06
+hindi,base_model,20,0.7158,1e-06

@@ -4,4 +4,8 @@ pandas==3.0.5
 # Step 03 (LLM judges): .env loading and the OpenAI-compatible client used for both OpenRouter and SEA-LION.
 python-dotenv==1.2.4
 openai==3.35.1
-# Later steps will add: scipy, scikit-learn, torch, transformers.
+# Step 04 (agreement and bias): kappa, Spearman, Kendall's tau, logistic regression.
+scipy==1.18.1
+scikit-learn==1.9.1
+statsmodels==0.15.0
+# Later steps will add: torch, transformers.

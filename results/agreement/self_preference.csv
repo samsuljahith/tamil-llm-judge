@@ -1,0 +1,11 @@
+language,judge,family,n_exclusive,judge_family_pick_pct,human_family_pick_pct
+tamil,frontier,gpt,660,58.18,54.02
+tamil,low_cost,gpt,660,56.36,54.02
+tamil,sea_lion,gemma,800,60.0,61.25
+tamil,base_model,gemma,799,59.7,61.2
+tamil,gpt4_32k,gpt,660,62.12,54.02
+hindi,frontier,gpt,260,67.5,58.27
+hindi,low_cost,gpt,260,68.27,58.27
+hindi,sea_lion,gemma,345,39.86,48.41
+hindi,base_model,gemma,345,41.45,48.41
+hindi,gpt4_32k,gpt,260,61.92,58.27

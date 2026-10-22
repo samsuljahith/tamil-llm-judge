@@ -1,0 +1,13 @@
+language,judge,n_nontie,n_unequal_length,pct_choose_longer,logit_coef_chars_a_minus_b,logit_pvalue
+tamil,human_majority,1243,1242,55.23,0.000474,0.0
+tamil,frontier,1612,1610,49.5,0.000112,0.1104
+tamil,low_cost,1630,1628,48.71,1.9e-05,0.78701
+tamil,sea_lion,1563,1561,52.59,0.00025,0.000649
+tamil,base_model,1557,1555,52.86,0.000281,0.00012
+tamil,gpt4_32k,1767,1765,59.43,0.000627,0.0
+hindi,human_majority,937,936,61.32,0.000835,0.0
+hindi,frontier,952,951,52.89,0.000226,0.064335
+hindi,low_cost,912,911,49.95,8e-06,0.952088
+hindi,sea_lion,867,866,56.12,0.000451,0.000495
+hindi,base_model,851,850,56.47,0.000509,0.000125
+hindi,gpt4_32k,976,975,58.26,0.000567,4e-06
