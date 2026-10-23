@@ -12,6 +12,7 @@ models/
 
 # Raw per-call judge logs (re-create the cleaned copies with scripts/03b_package_judgements.py)
 results/judgements/*.jsonl
+results/*.log
 logs/
 
 # Python
