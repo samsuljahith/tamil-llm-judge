@@ -9,12 +9,18 @@ fraction of the cost?
 
 ## Status
 
+25,136 judgements from four LLM judges are in `results/judgements_clean/`. On Tamil unique
+pairs, current judges excluding `gpt4_32k`: Cohen's κ vs the human majority label,
+swap-aggregated, is 0.44–0.51; mean pairwise Cohen's κ of each judge against the three
+individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and bias analysis
+(step 04) is complete. LiteJudge (steps 05–06) is in progress.
+
 | Step | Script | What it does | Status |
 |---|---|---|---|
 | 01 | `scripts/01_download_data.py` | Download the PARIKSHA sources at pinned commits; verify SHA-256 checksums | Done |
 | 02 | `scripts/02_merge_pariksha.py` | Merge the sources; measure the human baseline (the "human ceiling") | Done |
-| 03 | `scripts/03_run_llm_judges.py` | Run four LLM judges on every pair, in both answer orders | Planned |
-| 04 | `scripts/04_agreement_bias.py` | Agreement with humans (Cohen's kappa, Kendall's tau) and bias analysis | Planned |
+| 03 | `scripts/03_run_llm_judges.py` | Run four LLM judges on every pair, in both answer orders | Done |
+| 04 | `scripts/04_agreement_bias.py` | Agreement with humans (Cohen's kappa, Kendall's tau) and bias analysis | Done |
 | 05 | `scripts/05_muril_embeddings.py` | Frozen MuRIL embeddings for prompts and responses | Planned |
 | 06 | `scripts/06_train_litejudge.py` | Train and tune LiteJudge with prompt-grouped 5-fold cross-validation | Planned |
 | 07 | `scripts/07_mitigation_cost.py` | Order-swapping, ensembles and agreement per dollar | Planned |
@@ -31,6 +37,8 @@ data/raw/                downloaded sources (git-ignored; re-create with step 01
 data/processed/          analysis-ready tables (columns in docs/data_dictionary.md)
 results/                 statistics and judge outputs
 docs/data_dictionary.md  column definitions for every processed table
+docs/DATA_LICENSE.md     licences for redistributed PARIKSHA-derived data
+NOTICE                   short pointer to the code vs data licences
 ```
 
 ## Set-up
@@ -84,9 +92,12 @@ Hindi sample: 1,000 unique pairs (50 per prompt, seed 42)
 | Microsoft Research India, `microsoft/PARIKSHA` | `03bac88` | MIT | Prompts, responses, pairings, GPT-4-32K verdicts |
 | Google, `google/muril-base-cased` (from step 05) | pinned in step 05 | Apache-2.0 | Frozen text encoder for LiteJudge |
 
-The tables in `data/processed/` are derived from PARIKSHA and stay under the source licences
-(non-commercial use, attribution, share-alike). All code is GPL-3.0, because the Karya licence
-requires GPL-3.0 for code that feeds the data into AI systems.
+The tables in `data/processed/` and the cleaned judge logs in `results/judgements_clean/` are
+derived from PARIKSHA and stay under the source licences (non-commercial use, attribution,
+share-alike). All code is GPL-3.0, because the Karya licence requires GPL-3.0 for code that
+feeds the data into AI systems.
+
+**Data licence.** See [`docs/DATA_LICENSE.md`](docs/DATA_LICENSE.md) (and `NOTICE` at the repo root).
 
 ## Data handling and ethics
 
@@ -94,8 +105,6 @@ requires GPL-3.0 for code that feeds the data into AI systems.
 - No personal data in the processed tables. Annotator IDs and free-text justifications are read
   only to validate the merge, and are never written out.
 - API keys live in a git-ignored `.env` file (copy `.env.example`). Never commit keys.
-- The repository is private during the project. The supervisor is a collaborator, and markers
-  get access at submission.
 
 ## Data decisions made in step 02
 
@@ -118,10 +127,14 @@ requires GPL-3.0 for code that feeds the data into AI systems.
 
 ## Citation
 
+This repository is an MSc Data Science dissertation (University of Hertfordshire, 2026).
+
+If you use the PARIKSHA source data, cite:
+
 Watts, I. et al. (2024) 'PARIKSHA: A large-scale investigation of human-LLM evaluator agreement on
 multilingual and multi-cultural data', in *Proceedings of the 2024 Conference on Empirical Methods
 in Natural Language Processing*. Association for Computational Linguistics.
 
 ## Licence
 
-Code: GNU General Public License v3.0 (see `LICENSE`). Data: see the source licences above.
+Code: GNU General Public License v3.0 (see `LICENSE`). Data: see [`docs/DATA_LICENSE.md`](docs/DATA_LICENSE.md).

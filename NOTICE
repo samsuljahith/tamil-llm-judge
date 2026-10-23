@@ -1,0 +1,7 @@
+NOTICE
+
+Code: GNU General Public License v3.0 (see LICENSE).
+
+Data in data/processed/ and results/judgements_clean/ is derived from PARIKSHA and
+stays under the source licences (Karya: DAIA Tech BY-NC-SA-FS 1.0, non-commercial;
+Microsoft PARIKSHA: MIT). See docs/DATA_LICENSE.md.
