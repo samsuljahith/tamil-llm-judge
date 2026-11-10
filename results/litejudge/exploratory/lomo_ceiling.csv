@@ -1,0 +1,9 @@
+language,judge,n,human_human_kappa_mean,judge_human_kappa_mean,gap
+tamil,litejudge_lomo,3640,0.4138,0.2964,-0.1174
+tamil,model_id_lomo,3640,0.4138,0.2218,-0.1921
+tamil,litejudge,3640,0.4138,0.3039,-0.1099
+tamil,model_id,3640,0.4138,0.3422,-0.0716
+hindi,litejudge_lomo,2000,0.4315,0.4693,0.0378
+hindi,model_id_lomo,2000,0.4315,0.2334,-0.1981
+hindi,litejudge,2000,0.4315,0.4571,0.0256
+hindi,model_id,2000,0.4315,0.401,-0.0305

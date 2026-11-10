@@ -1,0 +1,80 @@
+{
+  "created": "2026-11-10T04:41:38+00:00",
+  "seed": 42,
+  "outer_folds": 5,
+  "inner_folds": 4,
+  "pca_grid": [
+    "None",
+    "16",
+    "32",
+    "64"
+  ],
+  "l2_grid": [
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0,
+    10.0
+  ],
+  "primary": "litejudge",
+  "per_language": {
+    "tamil": {
+      "fit_seconds": 0.059338000000003,
+      "predict_seconds": 0.0025940000000015395,
+      "n_predicted": 1820,
+      "swap_check_max_abs_diff": 0.0
+    },
+    "hindi": {
+      "fit_seconds": 0.08034200000000169,
+      "predict_seconds": 0.000897000000001924,
+      "n_predicted": 1000,
+      "swap_check_max_abs_diff": 0.0
+    }
+  },
+  "embeddings_manifest": {
+    "model_id": "google/muril-base-cased",
+    "model_revision": "afd9f36c7923d54e97903922ff1b260d091d202f",
+    "weights_sha256": "e65e3b7aaa3ce16d23fc4218783efd0417880655f8f398e6cb1a111a0de0c95f",
+    "torch": "2.14.1",
+    "transformers": "5.20.2",
+    "device": "cpu",
+    "dtype": "float32",
+    "seed": 42,
+    "input_format": "[CLS] prompt [SEP] response window [SEP]",
+    "pooling": "mean of last-layer vectors over response tokens; mean over windows",
+    "max_tokens": 512,
+    "window_overlap_tokens": 128,
+    "responses_csv_sha256": "43bd34705aade901f6b8b90a98f6bc09943ee72b08a74591f431c9eceab5590e",
+    "prompts_csv_sha256": "233a98a92f436d0cff9bd1c070018c183c558436ed592c8298dc71fa0224c6c8",
+    "tokenizer_check": {
+      "texts_checked": 720,
+      "texts_with_unk": 13,
+      "texts_losing_characters": 0
+    },
+    "languages": {
+      "tamil": {
+        "responses": 280,
+        "windows": 281,
+        "responses_with_more_than_one_window": 1,
+        "max_response_tokens": 581,
+        "seconds": 28.8,
+        "file": "muril_tamil.npz",
+        "file_sha256": "0e161cbdf451d2d78e040b08e5142780f242e4050ab3757f3742f2e20116d955",
+        "repeat_check_max_abs_diff": 1.4901161193847656e-08,
+        "created": "2026-11-10T04:22:10+00:00"
+      },
+      "hindi": {
+        "responses": 400,
+        "windows": 404,
+        "responses_with_more_than_one_window": 1,
+        "max_response_tokens": 1695,
+        "seconds": 45.1,
+        "file": "muril_hindi.npz",
+        "file_sha256": "7973f9ae1c38fcc9b9ca628a8bf24e04b5375f953c42ae96448792e1820d458f",
+        "repeat_check_max_abs_diff": 1.4901161193847656e-08,
+        "created": "2026-11-10T04:22:56+00:00"
+      }
+    }
+  }
+}

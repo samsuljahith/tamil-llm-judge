@@ -1,0 +1,11 @@
+language,judge,view,n,accuracy,kappa,n_human_nontie,accuracy_human_nontie
+tamil,litejudge,oof,1820,0.5588,0.3312,1243,0.7796
+tamil,litejudge_length,oof,1820,0.5495,0.3174,1243,0.7659
+tamil,longer,oof,1820,0.3775,0.0549,1243,0.5527
+tamil,majority,oof,1820,0.356,0.0,1243,0.5213
+tamil,model_id,oof,1820,0.5819,0.3664,1243,0.8093
+hindi,litejudge,oof,1000,0.753,0.5349,937,0.8036
+hindi,litejudge_length,oof,1000,0.769,0.5651,937,0.8207
+hindi,longer,oof,1000,0.574,0.1985,937,0.6126
+hindi,majority,oof,1000,0.487,0.0,937,0.5197
+hindi,model_id,oof,1000,0.724,0.4799,937,0.7727

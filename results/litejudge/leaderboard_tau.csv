@@ -1,0 +1,9 @@
+language,judge,n_models,kendall_tau,pvalue
+tamil,litejudge,14,0.5385,0.006742
+tamil,litejudge_length,14,0.5385,0.006742
+tamil,longer,14,0.0221,0.912684
+tamil,model_id,14,0.956,0.0
+hindi,litejudge,20,0.6947,3e-06
+hindi,litejudge_length,20,0.6947,3e-06
+hindi,longer,20,0.3008,0.064271
+hindi,model_id,20,0.9263,0.0

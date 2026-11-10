@@ -1,0 +1,11 @@
+language,judge,n,human_human_kappa_mean,judge_human_kappa_mean,gap
+tamil,litejudge,1820,0.4138,0.3039,-0.1099
+tamil,litejudge_length,1820,0.4138,0.2921,-0.1217
+tamil,longer,1820,0.4138,0.0517,-0.3622
+tamil,majority,1820,0.4138,0.0,-0.4138
+tamil,model_id,1820,0.4138,0.3422,-0.0716
+hindi,litejudge,1000,0.4315,0.4571,0.0256
+hindi,litejudge_length,1000,0.4315,0.475,0.0435
+hindi,longer,1000,0.4315,0.1774,-0.2541
+hindi,majority,1000,0.4315,0.0,-0.4315
+hindi,model_id,1000,0.4315,0.401,-0.0305

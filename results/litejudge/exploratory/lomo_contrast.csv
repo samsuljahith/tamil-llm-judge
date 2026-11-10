@@ -1,0 +1,5 @@
+contrast,estimate,ci_low,ci_high,p_boot
+kappa tamil: litejudge_lomo − model_id_lomo,0.0822,0.0369,0.1326,0.0
+kappa tamil: litejudge_lomo − litejudge,-0.0129,-0.0357,0.0104,0.274
+kappa hindi: litejudge_lomo − model_id_lomo,0.2781,0.2401,0.318,0.0
+kappa hindi: litejudge_lomo − litejudge,0.0155,-0.023,0.0534,0.431

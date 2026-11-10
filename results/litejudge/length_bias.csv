@@ -1,0 +1,11 @@
+language,judge,n_nontie,n_unequal_length,pct_choose_longer,logit_coef_chars_a_minus_b,logit_pvalue
+tamil,litejudge,1709,1707,57.12,0.000788,0.0
+tamil,litejudge_length,1697,1695,57.94,0.000838,0.0
+tamil,longer,1820,1818,100.0,17.306566,0.996188
+tamil,majority,1820,1818,49.5,-7e-06,1.0
+tamil,model_id,1704,1702,54.35,0.000458,0.0
+hindi,litejudge,1000,999,63.26,0.000957,0.0
+hindi,litejudge_length,1000,999,64.86,0.00108,0.0
+hindi,longer,1000,999,100.0,33.213332,0.995401
+hindi,majority,1000,999,50.05,1.1e-05,1.0
+hindi,model_id,1000,999,59.96,0.000819,0.0

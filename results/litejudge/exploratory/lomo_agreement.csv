@@ -1,0 +1,9 @@
+language,judge,view,n,accuracy,kappa,n_human_nontie,accuracy_human_nontie
+tamil,litejudge_lomo,lomo,3640,0.5503,0.3186,2486,0.7659
+tamil,model_id_lomo,lomo,3640,0.4962,0.2359,2486,0.7112
+tamil,litejudge,main_cv,3640,0.5588,0.3312,2486,0.7796
+tamil,model_id,main_cv,3640,0.5819,0.3664,2486,0.8093
+hindi,litejudge_lomo,lomo,2000,0.7615,0.551,1874,0.8127
+hindi,model_id_lomo,lomo,2000,0.6135,0.2716,1874,0.6547
+hindi,litejudge,main_cv,2000,0.753,0.5349,1874,0.8036
+hindi,model_id,main_cv,2000,0.724,0.4799,1874,0.7727

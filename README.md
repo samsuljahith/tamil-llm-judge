@@ -13,7 +13,7 @@ fraction of the cost?
 pairs, current judges excluding `gpt4_32k`: Cohen's κ vs the human majority label,
 swap-aggregated, is 0.44–0.51; mean pairwise Cohen's κ of each judge against the three
 individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and bias analysis
-(step 04) is complete. LiteJudge (steps 05–06) is in progress.
+(step 04) and LiteJudge (steps 05–06) are complete. Ensembles and cost (step 07) are in progress.
 
 | Step | Script | What it does | Status |
 |---|---|---|---|
@@ -22,7 +22,7 @@ individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and
 | 03 | `scripts/03_run_llm_judges.py` | Run four LLM judges on every pair, in both answer orders | Done |
 | 04 | `scripts/04_agreement_bias.py` | Agreement with humans (Cohen's kappa, Kendall's tau) and bias analysis | Done |
 | 05 | `scripts/05_embed_muril.py` | Frozen MuRIL embeddings for every prompt + response (Tamil and Hindi) | Done |
-| 06 | `scripts/06_litejudge.py` | Train LiteJudge (tie-aware Bradley–Terry) with prompt-grouped 5-fold cross-validation | Planned |
+| 06 | `scripts/06_litejudge.py` | Train LiteJudge (tie-aware Bradley–Terry) with prompt-grouped 5-fold cross-validation | Done |
 | 07 | `scripts/07_ensembles_cost.py` | Majority-vote ensembles and agreement per US$ | Planned |
 | 08 | `scripts/08_figures.py` | Every figure in the report | Planned |
 
@@ -44,6 +44,12 @@ Milestone tags: `v0.1-data`, `v0.2-judges`, `v0.3-litejudge`, `v1.0-submission`.
   (never a tie); majority class; a model-identity Bradley–Terry (which model wrote each answer,
   no text).
 - Hindi stays the 1,000-pair sample used for the LLM judges.
+
+### LiteJudge results (step 06; details in `results/litejudge/summary.md`)
+
+- Tamil: κ 0.33 [0.26, 0.41], significantly below all four LLM judges (0.44–0.51) and 0.11 below the human ceiling. Hindi: κ 0.54 [0.48, 0.59], level with the LLM judges (0.45–0.51; no significant difference).
+- Caveat: a baseline that only knows which model wrote each answer reaches κ 0.37 (Tamil) and 0.48 (Hindi), not significantly different from LiteJudge, so the pre-registered folds cannot show that LiteJudge reads more than model identity. An exploratory leave-one-model-out check (not pre-registered) keeps LiteJudge's κ on unseen models (0.32 / 0.55) while the identity baseline falls (0.24 / 0.27).
+- LiteJudge predicts few ties (Tamil 6% vs humans 32%) and, although it has no length feature, picks the longer answer slightly more often than humans do (57% vs 55% Tamil, 63% vs 61% Hindi).
 
 ## Repository structure
 

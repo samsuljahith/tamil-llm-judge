@@ -1,0 +1,15 @@
+contrast,estimate,ci_low,ci_high,p_boot,p_holm
+kappa tamil: litejudge − litejudge_length,0.0139,-0.0048,0.0327,0.142,0.852
+kappa tamil: litejudge − model_id,-0.0351,-0.0891,0.0169,0.187,0.852
+kappa tamil: litejudge − longer,0.2766,0.2302,0.3295,0.0,0.0
+kappa tamil: litejudge − frontier,-0.1595,-0.2199,-0.101,0.0,0.0
+kappa tamil: litejudge − low_cost,-0.1098,-0.1587,-0.06,0.0,0.0
+kappa tamil: litejudge − sea_lion,-0.1791,-0.2296,-0.13,0.0,0.0
+kappa tamil: litejudge − base_model,-0.1741,-0.222,-0.1197,0.0,0.0
+kappa hindi: litejudge − litejudge_length,-0.0303,-0.0638,0.0041,0.085,0.595
+kappa hindi: litejudge − model_id,0.056,-0.0256,0.1402,0.166,0.852
+kappa hindi: litejudge − longer,0.3369,0.2755,0.4057,0.0,0.0
+kappa hindi: litejudge − frontier,0.032,-0.046,0.1064,0.441,1.0
+kappa hindi: litejudge − low_cost,0.0815,-0.0029,0.1734,0.063,0.504
+kappa hindi: litejudge − sea_lion,0.0253,-0.0537,0.1075,0.55,1.0
+kappa hindi: litejudge − base_model,0.0283,-0.0438,0.0999,0.445,1.0
