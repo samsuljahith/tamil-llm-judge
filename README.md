@@ -21,12 +21,29 @@ individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and
 | 02 | `scripts/02_merge_pariksha.py` | Merge the sources; measure the human baseline (the "human ceiling") | Done |
 | 03 | `scripts/03_run_llm_judges.py` | Run four LLM judges on every pair, in both answer orders | Done |
 | 04 | `scripts/04_agreement_bias.py` | Agreement with humans (Cohen's kappa, Kendall's tau) and bias analysis | Done |
-| 05 | `scripts/05_muril_embeddings.py` | Frozen MuRIL embeddings for prompts and responses | Planned |
-| 06 | `scripts/06_train_litejudge.py` | Train and tune LiteJudge with prompt-grouped 5-fold cross-validation | Planned |
-| 07 | `scripts/07_mitigation_cost.py` | Order-swapping, ensembles and agreement per dollar | Planned |
+| 05 | `scripts/05_embed_muril.py` | Frozen MuRIL embeddings for every prompt + response (Tamil and Hindi) | Done |
+| 06 | `scripts/06_litejudge.py` | Train LiteJudge (tie-aware Bradley–Terry) with prompt-grouped 5-fold cross-validation | Planned |
+| 07 | `scripts/07_ensembles_cost.py` | Majority-vote ensembles and agreement per US$ | Planned |
 | 08 | `scripts/08_figures.py` | Every figure in the report | Planned |
 
 Milestone tags: `v0.1-data`, `v0.2-judges`, `v0.3-litejudge`, `v1.0-submission`.
+
+### LiteJudge pre-registration (fixed 10 Nov 2026, before any step 06 result was seen)
+
+- **Primary model: MuRIL embeddings only, with no length feature.** This thesis is about judge
+  biases, and humans pick the longer answer 55–61% of the time, so the main model must not
+  learn that length bias. A model with a length feature is reported as an ablation only.
+- Model: a Bradley–Terry model with a tie option (Davidson, 1970). Each response gets a linear
+  score from its frozen embedding.
+- Training labels: the three individual human votes, used as soft labels (weight 1/3 each).
+  Evaluation is against `human_majority`, with the same metrics and code as step 04.
+- Cross-validation: 5 outer folds grouped by `prompt_id`, seed 42. An inner grouped CV on the
+  training prompts only tunes the L2 strength and an optional PCA (none / 16 / 32 / 64
+  components, fitted on training folds only).
+- Baselines, scored on the same folds with the same metrics: always choose the longer response
+  (never a tie); majority class; a model-identity Bradley–Terry (which model wrote each answer,
+  no text).
+- Hindi stays the 1,000-pair sample used for the LLM judges.
 
 ## Repository structure
 
@@ -90,7 +107,7 @@ Hindi sample: 1,000 unique pairs (50 per prompt, seed 42)
 |---|---|---|---|
 | Karya, `karya-inc/pariksha` | `9557f94` | DAIA Tech BY-NC-SA-FS 1.0 | Human pairwise and direct ratings |
 | Microsoft Research India, `microsoft/PARIKSHA` | `03bac88` | MIT | Prompts, responses, pairings, GPT-4-32K verdicts |
-| Google, `google/muril-base-cased` (from step 05) | pinned in step 05 | Apache-2.0 | Frozen text encoder for LiteJudge |
+| Google, `google/muril-base-cased` (from step 05) | `afd9f36` | Apache-2.0 | Frozen text encoder for LiteJudge |
 
 The tables in `data/processed/` and the cleaned judge logs in `results/judgements_clean/` are
 derived from PARIKSHA and stay under the source licences (non-commercial use, attribution,

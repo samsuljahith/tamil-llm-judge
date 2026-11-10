@@ -8,4 +8,8 @@ openai==3.35.1
 scipy==1.18.1
 scikit-learn==1.9.1
 statsmodels==0.15.0
-# Later steps will add: torch, transformers.
+# Step 05 (frozen MuRIL embeddings): CPU-only PyTorch and the HuggingFace model loader.
+torch==2.14.1
+transformers==5.20.2
+# Step 08 (report figures).
+matplotlib==3.11.2
