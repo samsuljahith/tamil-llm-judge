@@ -10,16 +10,17 @@ mean Cohen's κ of the judge against each of the three individual raters, with 9
 black line and band show the human ceiling, the mean pairwise κ between the three raters
 (Tamil 0.41 [0.35, 0.48], Hindi 0.43
 [0.39, 0.48]); judges and ceiling use the same bootstrap resamples. Grey
-markers are baselines (model identity = a Bradley–Terry model that only knows which model wrote
-each answer; always longer; majority class); the hollow green marker is the LiteJudge ablation
-with a length feature. κ against the majority label (the main table metric) is reported in
+markers are baselines: the triangle is model identity (a Bradley–Terry model that only knows
+which model wrote each answer) and the diamonds are always longer and majority class; the hollow
+green circle is the LiteJudge ablation with a length feature. κ against the majority label (the main table metric) is reported in
 Table X. The figure uses κ against the individual raters, not κ against the majority label used in the
 main tables, because only the former is on the same scale as the human ceiling (rater vs rater):
 the comparison is like-for-like.
 
 **Figure (b) - `fig_b_tie_rate`.** Share of pairs each judge calls a tie, against the share of
 human-majority ties (black line: Tamil 31.7%, Hindi 6.3%). All judges under-call ties in Tamil.
-The always-longer and majority-class baselines never output a tie and are omitted.
+Each bar is labelled with its value, so a 0.0% bar (no ties at all) is visible. The always-longer
+and majority-class baselines never output a tie and are omitted.
 
 **Figure (c) - `fig_c_bias`.** Three judge biases, circles = Tamil, squares = Hindi, with 95% CIs
 (hollow = the LiteJudge length ablation).
@@ -32,7 +33,7 @@ points. Zero = same as humans.
 
 **Figure (d) - `fig_d_kendall_tau`.** Kendall's τ between the ranking of the response models
 by each judge's win rate (tie = 0.5) and the ranking by human-majority win rate (Tamil 14
-models, Hindi 20). Circles = Tamil, squares = Hindi; hollow = the LiteJudge length ablation and the always-longer baseline. The model-identity baseline ranks well by
+models, Hindi 20). Circles = Tamil, squares = Hindi; hollow = the LiteJudge length ablation. The model-identity baseline ranks well by
 construction: it learns exactly the per-model strength.
 
 **Figure (e) - `fig_e_cost_kappa`.** Logged API cost per 1,000 unique pairs (log scale) against
@@ -53,7 +54,7 @@ row percentages. Most disagreement is human ties that the judge resolves to A or
 **Figure (g) - `fig_g_lomo`.** EXPLORATORY (not pre-registered). Leave-one-model-out check: for
 each response model, LiteJudge and the model-identity baseline are trained on pairs without that
 model and tested on the pairs with it (hollow markers; the unseen model gets the average
-strength in the identity baseline). Filled markers are the pre-registered cross-validated
+strength in the identity baseline). Circles = LiteJudge, triangles = model identity. Filled markers are the pre-registered cross-validated
 predictions scored on the same rows. Every pair is tested twice, once per model it contains.
 LiteJudge keeps its agreement on unseen models (Tamil 0.30,
 Hindi 0.47) while model identity falls

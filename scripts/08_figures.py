@@ -68,8 +68,10 @@ COLOUR = {"frontier": "#2a78d6", "low_cost": "#eb6834", "sea_lion": "#1baf7a",
           "base_model": "#eda100", "gpt4_32k": "#e87ba4", "litejudge": "#008300",
           "litejudge_length": "#008300",  # same entity as LiteJudge; told apart by a hollow marker
           "model_id": "#52514e", "longer": "#898781", "majority": "#898781"}  # baselines in grey
-HOLLOW = {"litejudge_length", "longer"}       # drawn with a white centre
-MARKER = {j: "o" for j in JUDGES} | {"model_id": "s", "longer": "D", "majority": "D", "litejudge_length": "o"}
+HOLLOW = {"litejudge_length"}  # white centre = the ablation (hollow is reserved for ablation /
+                               # single-order / unseen-model runs; never for a baseline)
+# Squares mean Hindi in (c) and (d), so no judge uses a square: model identity is a triangle.
+MARKER = {j: "o" for j in JUDGES} | {"model_id": "^", "longer": "D", "majority": "D", "litejudge_length": "o"}
 INK, INK2, MUTED, GRID, AXIS = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
 ENSEMBLE_COLOUR = INK2  # ensembles (cost figure only): dark grey diamonds, always direct-labelled
 
@@ -309,6 +311,9 @@ def fig_b() -> list[str]:
             hollow = j in HOLLOW  # the ablation: outlined bar, like its hollow marker elsewhere
             ax.barh(ypos[j], v, height=0.55, facecolor="white" if hollow else COLOUR[j],
                     edgecolor=COLOUR[j], linewidth=1.0 if hollow else 0, zorder=2)
+            # White box behind the number so it stays readable where it crosses the humans line.
+            ax.text(v + 0.6, ypos[j], f"{v:.1f}%", va="center", ha="left", fontsize=5.5, color=INK2, zorder=4,
+                    bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.3})
         human = ties.loc[(lang, "human_majority")]
         ax.axvline(human, color=INK, linewidth=0.9, zorder=3)
         xmax = 35
@@ -546,16 +551,17 @@ mean Cohen's κ of the judge against each of the three individual raters, with 9
 black line and band show the human ceiling, the mean pairwise κ between the three raters
 (Tamil {ta_c.estimate:.2f} [{ta_c.ci_low:.2f}, {ta_c.ci_high:.2f}], Hindi {hi_c.estimate:.2f}
 [{hi_c.ci_low:.2f}, {hi_c.ci_high:.2f}]); judges and ceiling use the same bootstrap resamples. Grey
-markers are baselines (model identity = a Bradley–Terry model that only knows which model wrote
-each answer; always longer; majority class); the hollow green marker is the LiteJudge ablation
-with a length feature. κ against the majority label (the main table metric) is reported in
+markers are baselines: the triangle is model identity (a Bradley–Terry model that only knows
+which model wrote each answer) and the diamonds are always longer and majority class; the hollow
+green circle is the LiteJudge ablation with a length feature. κ against the majority label (the main table metric) is reported in
 Table X. The figure uses κ against the individual raters, not κ against the majority label used in the
 main tables, because only the former is on the same scale as the human ceiling (rater vs rater):
 the comparison is like-for-like.
 
 **Figure (b) - `fig_b_tie_rate`.** Share of pairs each judge calls a tie, against the share of
 human-majority ties (black line: Tamil 31.7%, Hindi 6.3%). All judges under-call ties in Tamil.
-The always-longer and majority-class baselines never output a tie and are omitted.
+Each bar is labelled with its value, so a 0.0% bar (no ties at all) is visible. The always-longer
+and majority-class baselines never output a tie and are omitted.
 
 **Figure (c) - `fig_c_bias`.** Three judge biases, circles = Tamil, squares = Hindi, with 95% CIs
 (hollow = the LiteJudge length ablation).
@@ -568,7 +574,7 @@ points. Zero = same as humans.
 
 **Figure (d) - `fig_d_kendall_tau`.** Kendall's τ between the ranking of the response models
 by each judge's win rate (tie = 0.5) and the ranking by human-majority win rate (Tamil 14
-models, Hindi 20). Circles = Tamil, squares = Hindi; hollow = the LiteJudge length ablation and the always-longer baseline. The model-identity baseline ranks well by
+models, Hindi 20). Circles = Tamil, squares = Hindi; hollow = the LiteJudge length ablation. The model-identity baseline ranks well by
 construction: it learns exactly the per-model strength.
 
 **Figure (e) - `fig_e_cost_kappa`.** Logged API cost per 1,000 unique pairs (log scale) against
@@ -589,7 +595,7 @@ row percentages. Most disagreement is human ties that the judge resolves to A or
 **Figure (g) - `fig_g_lomo`.** EXPLORATORY (not pre-registered). Leave-one-model-out check: for
 each response model, LiteJudge and the model-identity baseline are trained on pairs without that
 model and tested on the pairs with it (hollow markers; the unseen model gets the average
-strength in the identity baseline). Filled markers are the pre-registered cross-validated
+strength in the identity baseline). Circles = LiteJudge, triangles = model identity. Filled markers are the pre-registered cross-validated
 predictions scored on the same rows. Every pair is tested twice, once per model it contains.
 LiteJudge keeps its agreement on unseen models (Tamil {s('tamil', 'litejudge_lomo', 'lomo').estimate:.2f},
 Hindi {s('hindi', 'litejudge_lomo', 'lomo').estimate:.2f}) while model identity falls
