@@ -93,6 +93,9 @@ On Windows, use `.venv\Scripts\python` wherever the commands below say `python`,
 
 ## Reproduce
 
+Full guide for steps 01–08 from a fresh clone (commands, runtime, which step needs API keys, and
+the result of a fresh-clone check on 10 Nov 2026): [`docs/REPRODUCE.md`](docs/REPRODUCE.md).
+
 ```bash
 python scripts/01_download_data.py    # about 170 MB; verifies commits and checksums
 python scripts/02_merge_pariksha.py   # writes data/processed/ and results/human_baseline.json
