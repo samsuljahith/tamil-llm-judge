@@ -1,0 +1,9 @@
+language,judge,kappa_ab,kappa_swap_agg,kappa_gain,extra_usd_per_1000_pairs
+tamil,frontier,0.4476,0.4921,0.0445,8.2503
+tamil,low_cost,0.3915,0.4416,0.0501,1.0336
+tamil,sea_lion,0.4478,0.5103,0.0625,0.0
+tamil,base_model,0.4472,0.5048,0.0576,0.0586
+hindi,frontier,0.5144,0.5033,-0.0111,7.5184
+hindi,low_cost,0.4531,0.4528,-0.0003,1.0068
+hindi,sea_lion,0.5512,0.5108,-0.0404,0.0
+hindi,base_model,0.5464,0.5061,-0.0403,0.0705

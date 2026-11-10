@@ -1,0 +1,17 @@
+language,judge,metric,estimate,ci_low,ci_high
+tamil,llm4,kappa,0.5226,0.4516,0.5882
+tamil,llm4,tie_rate,0.1859,0.1527,0.2236
+tamil,cheap3,kappa,0.514,0.4425,0.5831
+tamil,cheap3,tie_rate,0.1387,0.1093,0.172
+tamil,llm4_lite,kappa,0.5099,0.4405,0.5762
+tamil,llm4_lite,tie_rate,0.1229,0.0967,0.1506
+tamil,free_lite,kappa,0.5088,0.4377,0.5768
+tamil,free_lite,tie_rate,0.1413,0.1143,0.172
+hindi,llm4,kappa,0.4874,0.4289,0.5462
+hindi,llm4,tie_rate,0.1743,0.145,0.206
+hindi,cheap3,kappa,0.5123,0.4557,0.5692
+hindi,cheap3,tie_rate,0.1294,0.102,0.159
+hindi,llm4_lite,kappa,0.5378,0.4812,0.5969
+hindi,llm4_lite,tie_rate,0.0847,0.066,0.106
+hindi,free_lite,kappa,0.5191,0.4665,0.5743
+hindi,free_lite,tie_rate,0.136,0.11,0.163

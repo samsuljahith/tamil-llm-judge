@@ -13,7 +13,7 @@ fraction of the cost?
 pairs, current judges excluding `gpt4_32k`: Cohen's κ vs the human majority label,
 swap-aggregated, is 0.44–0.51; mean pairwise Cohen's κ of each judge against the three
 individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and bias analysis
-(step 04) and LiteJudge (steps 05–06) are complete. Ensembles and cost (step 07) are in progress.
+(step 04) and LiteJudge (steps 05–06) are complete. Ensembles and cost (step 07) are complete. Report figures (step 08) are in progress.
 
 | Step | Script | What it does | Status |
 |---|---|---|---|
@@ -23,7 +23,7 @@ individual raters is 0.39–0.45 (human–human ceiling 0.41). The agreement and
 | 04 | `scripts/04_agreement_bias.py` | Agreement with humans (Cohen's kappa, Kendall's tau) and bias analysis | Done |
 | 05 | `scripts/05_embed_muril.py` | Frozen MuRIL embeddings for every prompt + response (Tamil and Hindi) | Done |
 | 06 | `scripts/06_litejudge.py` | Train LiteJudge (tie-aware Bradley–Terry) with prompt-grouped 5-fold cross-validation | Done |
-| 07 | `scripts/07_ensembles_cost.py` | Majority-vote ensembles and agreement per US$ | Planned |
+| 07 | `scripts/07_ensembles_cost.py` | Majority-vote ensembles and agreement per US$ | Done |
 | 08 | `scripts/08_figures.py` | Every figure in the report | Planned |
 
 Milestone tags: `v0.1-data`, `v0.2-judges`, `v0.3-litejudge`, `v1.0-submission`.
@@ -50,6 +50,11 @@ Milestone tags: `v0.1-data`, `v0.2-judges`, `v0.3-litejudge`, `v1.0-submission`.
 - Tamil: κ 0.33 [0.26, 0.41], significantly below all four LLM judges (0.44–0.51) and 0.11 below the human ceiling. Hindi: κ 0.54 [0.48, 0.59], level with the LLM judges (0.45–0.51; no significant difference).
 - Caveat: a baseline that only knows which model wrote each answer reaches κ 0.37 (Tamil) and 0.48 (Hindi), not significantly different from LiteJudge, so the pre-registered folds cannot show that LiteJudge reads more than model identity. An exploratory leave-one-model-out check (not pre-registered) keeps LiteJudge's κ on unseen models (0.32 / 0.55) while the identity baseline falls (0.24 / 0.27).
 - LiteJudge predicts few ties (Tamil 6% vs humans 32%) and, although it has no length feature, picks the longer answer slightly more often than humans do (57% vs 55% Tamil, 63% vs 61% Hindi).
+
+### Ensembles and cost (step 07; details in `results/ensembles/summary.md`)
+
+- Gemma 3 27B (base_model) matches the frontier judge on Tamil (κ 0.505 vs 0.492) at about 1/140 of the cost ($0.12 vs $16.44 per 1,000 pairs, both orders); majority-vote ensembles give small gains that are not significant after Holm correction.
+- Order-swapping helps Tamil (+0.04 to +0.06 κ for double the cost) but not Hindi (−0.04 to 0.00), where the extra ties do not match the rare human ties.
 
 ## Repository structure
 

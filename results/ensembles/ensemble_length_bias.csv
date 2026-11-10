@@ -1,0 +1,9 @@
+language,judge,n_nontie,n_unequal_length,pct_choose_longer,logit_coef_chars_a_minus_b,logit_pvalue
+tamil,llm4,1482,1480,51.42,0.000185,0.013962
+tamil,cheap3,1568,1566,52.36,0.000241,0.000896
+tamil,llm4_lite,1597,1595,52.29,0.000267,0.000209
+tamil,free_lite,1563,1561,53.11,0.000288,7.7e-05
+hindi,llm4,826,825,55.27,0.000386,0.003589
+hindi,cheap3,871,870,55.98,0.000445,0.000569
+hindi,llm4_lite,915,914,55.8,0.000424,0.000755
+hindi,free_lite,864,863,56.78,0.000498,0.000149

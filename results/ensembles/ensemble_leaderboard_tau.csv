@@ -1,0 +1,9 @@
+language,judge,n_models,kendall_tau,pvalue
+tamil,llm4,14,0.8681,1e-06
+tamil,cheap3,14,0.8681,1e-06
+tamil,llm4_lite,14,0.8462,2e-06
+tamil,free_lite,14,0.8462,2e-06
+hindi,llm4,20,0.7158,1e-06
+hindi,cheap3,20,0.7158,1e-06
+hindi,llm4_lite,20,0.7579,0.0
+hindi,free_lite,20,0.7263,1e-06

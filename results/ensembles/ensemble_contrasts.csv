@@ -1,0 +1,9 @@
+contrast,estimate,ci_low,ci_high,p_boot,p_holm
+kappa tamil: llm4 − frontier,0.0308,-0.0131,0.0731,0.161,1.0
+kappa tamil: cheap3 − frontier,0.022,-0.0334,0.0733,0.407,1.0
+kappa tamil: llm4_lite − frontier,0.0171,-0.0325,0.0577,0.451,1.0
+kappa tamil: free_lite − frontier,0.0171,-0.0379,0.0693,0.534,1.0
+kappa hindi: llm4 − frontier,-0.0167,-0.0524,0.019,0.363,1.0
+kappa hindi: cheap3 − frontier,0.0105,-0.0274,0.047,0.589,1.0
+kappa hindi: llm4_lite − frontier,0.0357,0.0015,0.0702,0.044,0.352
+kappa hindi: free_lite − frontier,0.0151,-0.0239,0.0544,0.458,1.0

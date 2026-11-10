@@ -1,0 +1,9 @@
+language,judge,n_pairs,cost_usd_ab_only,cost_usd_both_orders,usd_per_1000_pairs_ab_only,usd_per_1000_pairs_both_orders
+tamil,frontier,1820,14.9101,29.9256,8.1924,16.4427
+tamil,low_cost,1820,1.9115,3.7927,1.0503,2.0839
+tamil,sea_lion,1820,0.0,0.0,0.0,0.0
+tamil,base_model,1820,0.1065,0.2131,0.0585,0.1171
+hindi,frontier,1000,7.5128,15.0312,7.5128,15.0312
+hindi,low_cost,1000,1.0062,2.013,1.0062,2.013
+hindi,sea_lion,1000,0.0,0.0,0.0,0.0
+hindi,base_model,1000,0.0718,0.1423,0.0718,0.1423

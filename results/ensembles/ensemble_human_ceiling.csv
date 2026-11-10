@@ -1,0 +1,9 @@
+language,judge,n,human_human_kappa_mean,judge_human_kappa_mean,gap
+tamil,llm4,1820,0.4138,0.4506,0.0368
+tamil,cheap3,1820,0.4138,0.4478,0.034
+tamil,llm4_lite,1820,0.4138,0.443,0.0292
+tamil,free_lite,1820,0.4138,0.4443,0.0304
+hindi,llm4,1000,0.4315,0.4077,-0.0238
+hindi,cheap3,1000,0.4315,0.4339,0.0024
+hindi,llm4_lite,1000,0.4315,0.4547,0.0232
+hindi,free_lite,1000,0.4315,0.4405,0.0091

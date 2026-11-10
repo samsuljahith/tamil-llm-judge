@@ -1,0 +1,9 @@
+language,judge,view,n,accuracy,kappa,n_human_nontie,accuracy_human_nontie
+tamil,llm4,ensemble,1820,0.6841,0.5236,1243,0.8383
+tamil,cheap3,ensemble,1820,0.678,0.5135,1243,0.86
+tamil,llm4_lite,ensemble,1820,0.6753,0.5091,1243,0.8721
+tamil,free_lite,ensemble,1820,0.6747,0.5085,1243,0.856
+hindi,llm4,ensemble,1000,0.691,0.4862,937,0.714
+hindi,cheap3,ensemble,1000,0.716,0.5129,937,0.7449
+hindi,llm4_lite,ensemble,1000,0.739,0.5381,937,0.7748
+hindi,free_lite,ensemble,1000,0.718,0.5187,937,0.7471
